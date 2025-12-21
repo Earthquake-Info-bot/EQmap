@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.10.2</title>
+<title>地震マップv1.10.3</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
   #map { width: 100%; height: 100vh; }
@@ -294,7 +294,7 @@ function buildTsunamiText(domestic, foreign){
           const coordData = await fetch('quake_station.json').then(res => res.json());
           const coordMap = {};
           coordData.forEach(item => {
-            coordMap[item.name] = { lat: item.lat, lon: item.lon };
+            coordMap[item.name] = { lat: Number(item.lat), lon: Number(item.lon) };
           });
 
           let latlngs = [];
@@ -373,7 +373,7 @@ ${timeText}<br>
 ${nameText}<br>
 M${magnitudeText}　深さ ${depthText}<br>
 ${tsunami}<br>
-<span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.2</span>
+<span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.3</span>
 `;
 
           // 最大震度表示
