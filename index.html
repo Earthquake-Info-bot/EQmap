@@ -220,6 +220,11 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   maxZoom: 19
 }).addTo(map);
 
+// 親要素のサイズに合わせて再描画
+setTimeout(() => {
+  map.invalidateSize();
+}, 100);
+
 map.createPane('hypocenterPane');
 map.getPane('hypocenterPane').style.zIndex = 10000;
 
