@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.10.1</title>
+<title>地震マップv1.10.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
   #map { width: 100%; height: 100vh; }
@@ -301,12 +301,17 @@ function buildTsunamiText(domestic, foreign){
           points.forEach(p => {
             const latlon = coordMap[p.addr];
             const intensity = p2pToShindo[p.scale];
-            if(latlon && intensity){
-              addIntensityMarker(latlon.lat, latlon.lon, intensity, p.addr);
-              latlngs.push([latlon.lat, latlon.lon]);
+            if(latlon && intensity && !isNaN(latlon.lat) && !isNaN(latlon.lon)){
+              // 文字列 → 数値に変換
+              const latNum = Number(latlon.lat);
+              const lonNum = Number(latlon.lon);
+              addIntensityMarker(latNum, lonNum, intensity, p.addr);
+              latlngs.push([latNum, lonNum]);
+            } else {
+              console.warn("座標未定義または不正:", p.addr, latlon);
             }
           });
-
+          
           const eq = eqData.earthquake;
           const hypo = eq.hypocenter;
 
@@ -368,7 +373,7 @@ ${timeText}<br>
 ${nameText}<br>
 M${magnitudeText}　深さ ${depthText}<br>
 ${tsunami}<br>
-<span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.1</span>
+<span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.2</span>
 `;
 
           // 最大震度表示
