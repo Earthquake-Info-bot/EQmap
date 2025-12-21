@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.10.4</title>
+<title>地震マップv1.10.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
   #map { width: 100%; height: 100vh; }
@@ -274,76 +274,71 @@ function buildTsunamiText(domestic, foreign){
   return "津波の有無は不明";
 }
 
-// ==================== 地震情報取得（ローカルJSON対応版）===================
-      (async () => {
+async function loadCoordMap() {
+  const res = await fetch('./coords.json');
+  if (!res.ok) throw new Error('coords.json が読めません');
+  const arr = await res.json();
+
+  const map = {};
+  arr.forEach(p => {
+    map[p.name] = {
+      lat: Number(p.lat),
+      lon: Number(p.lon)
+    };
+  });
+
+  return map;
+}
+  
+// ==================== 地震情報取得（そのまま）===================
+(async () => {
+  try {
+    const res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=5');
+    const data = await res.json();
+
+    for(const eqData of data){
+      const type = eqData.issue?.type;
+      if(type !== "DetailScale" && type !== "Foreign") continue;
+
+      const points = eqData.points;
+
+      await new Promise(async (resolve, reject) => {
         try {
-          const res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=5');
-          const data = await res.json();
+          // ★ 座標をローカルJSONから取得
+          const coordMap = await loadCoordMap();
       
-          for (const eqData of data) {
-            const type = eqData.issue?.type;
-            if (type !== "DetailScale" && type !== "Foreign") continue;
+          let latlngs = [];
+          points.forEach(p => {
+            const latlon = coordMap[p.addr];
+            const intensity = p2pToShindo[p.scale];
+            if (latlon && intensity) {
+              addIntensityMarker(latlon.lat, latlon.lon, intensity, p.addr);
+              latlngs.push([latlon.lat, latlon.lon]);
+            }
+          });
       
-            const points = eqData.points;
-      
-            await new Promise(async (resolve, reject) => {
-              try {
-                // quake_station.json を取得
-                const coordData = await fetch('quake_station.json').then(res => res.json());
-      
-                // ★ 修正ポイント：安全な coordMap 作成
-                const coordMap = {};
-                coordData.forEach(item => {
-                  if (item.name && item.lat && item.lon) {
-                    const lat = Number(item.lat);
-                    const lon = Number(item.lon);
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                      coordMap[item.name] = { lat, lon };
-                    }
-                  }
-                });
-      
-                let latlngs = [];
-      
-                points.forEach(p => {
-                  const latlon = coordMap[p.addr];
-                  const intensity = p2pToShindo[p.scale];
-      
-                  if (latlon && intensity) {
-                    addIntensityMarker(latlon.lat, latlon.lon, intensity, p.addr);
-                    latlngs.push([latlon.lat, latlon.lon]);
-                  } else {
-                    console.warn("座標未定義または不正:", p.addr, latlon);
-                  }
-                });
-      
-                resolve();
-              } catch (e) {
-                reject(e);
-              }
-            });
-      
-            break; // 最新1件のみ
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      })();
-          
           const eq = eqData.earthquake;
           const hypo = eq.hypocenter;
-
-          if(hypo?.latitude != null && hypo?.longitude != null && hypo.latitude !== -200 && hypo.longitude !== -200){
+      
+          if (hypo?.latitude != null && hypo?.longitude != null &&
+              hypo.latitude !== -200 && hypo.longitude !== -200) {
             latlngs.push([hypo.latitude, hypo.longitude]);
           }
-
-          if(latlngs.length > 0) map.fitBounds(L.latLngBounds(latlngs), {padding:[150,150], maxZoom:8});
-
+      
+          if (latlngs.length > 0) {
+            map.fitBounds(L.latLngBounds(latlngs), {
+              padding:[150,150],
+              maxZoom:8
+            });
+          }
+      
           document.getElementById('loading').style.display='none';
           const hypoInfoEl = document.getElementById('hypo-info');
-
-          // 震源マーカー（赤い十字）
-          if(hypo?.latitude != null && hypo?.longitude != null && hypo.latitude !== -200 && hypo.longitude !== -200){
+      
+          // ===== 震源マーカー =====
+          if (hypo?.latitude != null && hypo?.longitude != null &&
+              hypo.latitude !== -200 && hypo.longitude !== -200) {
+      
             const size=30, thickness=5, lat=hypo.latitude, lon=hypo.longitude;
             const crossIcon = L.divIcon({
               className:'',
@@ -355,55 +350,66 @@ function buildTsunamiText(domestic, foreign){
               iconAnchor:[size/2,size/2],
               pane:'hypocenterPane'
             });
-            const crossMarker = L.marker([lat,lon], {icon:crossIcon, interactive:false, zIndexOffset:10000}).addTo(map);
-            function blink(){ 
-              const el = crossMarker.getElement(); 
-              if(!el) return; 
-              el.style.display='block'; 
-              setTimeout(()=>el.style.display='none',2500); 
+      
+            const crossMarker = L.marker([lat,lon], {
+              icon:crossIcon,
+              interactive:false,
+              zIndexOffset:10000
+            }).addTo(map);
+      
+            function blink(){
+              const el = crossMarker.getElement();
+              if(!el) return;
+              el.style.display='block';
+              setTimeout(()=>el.style.display='none',2500);
             }
-            setInterval(blink, 3000); 
+            setInterval(blink, 3000);
             blink();
           }
-
-          // 情報表示
+      
+          // ===== 情報表示 =====
           let nameText = (hypo?.name && hypo.name.trim() !== '') ? hypo.name : '震源地不明';
-          let depthText = (hypo?.depth != null) ? (hypo.depth === -1 ? '不明' : (hypo.depth === 0 ? 'ごく浅い' : hypo.depth+'km')) : '不明';
-          let magnitudeText = (hypo?.magnitude != null) 
-              ? (hypo.magnitude === -1 ? '不明' : hypo.magnitude.toFixed(1)) 
-              : '不明';
+          let depthText = (hypo?.depth != null)
+            ? (hypo.depth === -1 ? '不明' : (hypo.depth === 0 ? 'ごく浅い' : hypo.depth+'km'))
+            : '不明';
+          let magnitudeText = (hypo?.magnitude != null)
+            ? (hypo.magnitude === -1 ? '不明' : hypo.magnitude.toFixed(1))
+            : '不明';
+      
           let timeText = '不明';
           if(eq.time){
             const date = new Date(eq.time);
             if(!isNaN(date)){
-              const yyyy = date.getFullYear(),
-                    MM = String(date.getMonth()+1).padStart(2,'0'),
-                    dd = String(date.getDate()).padStart(2,'0'),
-                    HH = String(date.getHours()).padStart(2,'0'),
-                    mm = String(date.getMinutes()).padStart(2,'0');
+              const yyyy = date.getFullYear();
+              const MM = String(date.getMonth()+1).padStart(2,'0');
+              const dd = String(date.getDate()).padStart(2,'0');
+              const HH = String(date.getHours()).padStart(2,'0');
+              const mm = String(date.getMinutes()).padStart(2,'0');
               timeText = `${yyyy}/${MM}/${dd} ${HH}:${mm}頃`;
             }
           }
+      
           const tsunami = buildTsunamiText(eq.domesticTsunami, eq.foreignTsunami);
-
+      
           hypoInfoEl.innerHTML = `
-${timeText}<br>
-${nameText}<br>
-M${magnitudeText}　深さ ${depthText}<br>
-${tsunami}<br>
-<span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.4</span>
-`;
-
-          // 最大震度表示
+      ${timeText}<br>
+      ${nameText}<br>
+      M${magnitudeText}　深さ ${depthText}<br>
+      ${tsunami}<br>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.1</span>
+      `;
+      
+          // ===== 最大震度 =====
           const maxIntensityEl = document.getElementById('max-intensity');
           const scaleEl = maxIntensityEl.querySelector('.scale');
           const labelEl = maxIntensityEl.querySelector('.label');
+      
           const maxScaleMap = {10:"1",20:"2",30:"3",40:"4",45:"5-",50:"5+",55:"6-",60:"6+",70:"7"};
           const maxScale = eq.maxScale;
           const intensity = maxScaleMap[maxScale] || "--";
-
+      
           scaleEl.textContent = intensity;
-
+      
           if (intensity === "--") {
             maxIntensityEl.style.background = "#ffffff";
             labelEl.style.color = "#000000";
@@ -415,12 +421,12 @@ ${tsunami}<br>
             labelEl.style.color = txtColor;
             scaleEl.style.color = txtColor;
           }
-
+      
           updateMaxIntensityPosition();
           window.addEventListener('resize', updateMaxIntensityPosition);
-
+      
           resolve();
-        } catch(e){
+        } catch(e) {
           reject(e);
         }
       });
@@ -529,4 +535,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
