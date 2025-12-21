@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.10.3</title>
+<title>地震マップv1.10.4</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
   #map { width: 100%; height: 100vh; }
@@ -275,42 +275,60 @@ function buildTsunamiText(domestic, foreign){
 }
 
 // ==================== 地震情報取得（ローカルJSON対応版）===================
-(async () => {
-  try {
-    const res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=5');
-    const data = await res.json();
-
-    for(const eqData of data){
-      const type = eqData.issue?.type;
-      if(type !== "DetailScale" && type !== "Foreign") continue;
-
-      const points = eqData.points;
-      const names = points.map(p => p.addr);
-
-      // Google Apps Script 呼び出しをローカルJSON fetchに置き換え
-      await new Promise(async (resolve, reject) => {
+      (async () => {
         try {
-          // quake_station.json を取得
-          const coordData = await fetch('quake_station.json').then(res => res.json());
-          const coordMap = {};
-          coordData.forEach(item => {
-            coordMap[item.name] = { lat: Number(item.lat), lon: Number(item.lon) };
-          });
-
-          let latlngs = [];
-          points.forEach(p => {
-            const latlon = coordMap[p.addr];
-            const intensity = p2pToShindo[p.scale];
-            if(latlon && intensity && !isNaN(latlon.lat) && !isNaN(latlon.lon)){
-              // 文字列 → 数値に変換
-              const latNum = Number(latlon.lat);
-              const lonNum = Number(latlon.lon);
-              addIntensityMarker(latNum, lonNum, intensity, p.addr);
-              latlngs.push([latNum, lonNum]);
-            } else {
-              console.warn("座標未定義または不正:", p.addr, latlon);
-            }
-          });
+          const res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=5');
+          const data = await res.json();
+      
+          for (const eqData of data) {
+            const type = eqData.issue?.type;
+            if (type !== "DetailScale" && type !== "Foreign") continue;
+      
+            const points = eqData.points;
+      
+            await new Promise(async (resolve, reject) => {
+              try {
+                // quake_station.json を取得
+                const coordData = await fetch('quake_station.json').then(res => res.json());
+      
+                // ★ 修正ポイント：安全な coordMap 作成
+                const coordMap = {};
+                coordData.forEach(item => {
+                  if (item.name && item.lat && item.lon) {
+                    const lat = Number(item.lat);
+                    const lon = Number(item.lon);
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                      coordMap[item.name] = { lat, lon };
+                    }
+                  }
+                });
+      
+                let latlngs = [];
+      
+                points.forEach(p => {
+                  const latlon = coordMap[p.addr];
+                  const intensity = p2pToShindo[p.scale];
+      
+                  if (latlon && intensity) {
+                    addIntensityMarker(latlon.lat, latlon.lon, intensity, p.addr);
+                    latlngs.push([latlon.lat, latlon.lon]);
+                  } else {
+                    console.warn("座標未定義または不正:", p.addr, latlon);
+                  }
+                });
+      
+                resolve();
+              } catch (e) {
+                reject(e);
+              }
+            });
+      
+            break; // 最新1件のみ
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      })();
           
           const eq = eqData.earthquake;
           const hypo = eq.hypocenter;
@@ -373,7 +391,7 @@ ${timeText}<br>
 ${nameText}<br>
 M${magnitudeText}　深さ ${depthText}<br>
 ${tsunami}<br>
-<span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.3</span>
+<span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.4</span>
 `;
 
           // 最大震度表示
