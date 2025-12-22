@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.10.3</title>
+<title>地震マップv1.10.4</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
   #map { width: 100%; height: 100vh; }
@@ -322,8 +322,10 @@ async function loadCoordMap() {
                   latlon.lat,
                   latlon.lon,
                   intensity,
-                  `${p.addr}${latlon.affi ? `<br>（${latlon.affi}）` : ""}`
-                );
+                  `<div style="text-align:center;">
+                    ${p.addr}${latlon.affi ? `<br>（${latlon.affi}）` : ""}
+                  </div>`
+              );
               latlngs.push([latlon.lat, latlon.lon]);
             }
           });
@@ -407,7 +409,7 @@ async function loadCoordMap() {
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.3</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.4</span>
       `;
       
           // ===== 最大震度 =====
