@@ -2,10 +2,23 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.10.4</title>
+<title>地震マップv1.10.5</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
-  #map { width: 100%; height: 100vh; }
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+  
+#map {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
   .intensity-marker {
     display:flex;
     justify-content:center;
@@ -123,7 +136,7 @@ P2P地震情報APIの更新状況により、<br>タイムラグが生じる場�
 座標データは<a href="https://gist.github.com/iku55/79005d1896631ad6117bbe327b8162c1" target="_blank">iku55</a>様のjsonを使用<br>
 【地図】<br>(c)<a href="https://carto.com/" target="_blank">CARTO</a><br>
 【制作】<br>NAFY/なふぃー　ChatGPT<br>
-Google Apps Script
+GitHub Pages
 </p>
 
 
@@ -189,31 +202,21 @@ Google Apps Script
   }
 </style>
 
-<script>
-  // 開く・閉じる動作
-  const helpButton = document.getElementById('help-button');
-  const helpPopup = document.getElementById('help-popup');
-  const popupClose = document.getElementById('popup-close');
-
-  helpButton.addEventListener('click', () => {
-    helpPopup.style.display = 'flex';
-  });
-
-  popupClose.addEventListener('click', () => {
-    helpPopup.style.display = 'none';
-  });
-
-  helpPopup.addEventListener('click', e => {
-    if (e.target === helpPopup) helpPopup.style.display = 'none';
-  });
-</script>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 // ==================== 地震マップβ版 最終完全版 ====================
 
 // メイン地図の初期化
 const map = L.map('map').setView([37.5, 138], 5);
+function resizeMap() {
+  map.invalidateSize();
+}
+
+window.addEventListener('resize', resizeMap);
+window.addEventListener('orientationchange', () => {
+  setTimeout(resizeMap, 300);
+});
+  
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; CARTO',
   subdomains: 'abcd',
@@ -409,7 +412,7 @@ async function loadCoordMap() {
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.4</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.5</span>
       `;
       
           // ===== 最大震度 =====
@@ -515,6 +518,7 @@ document.getElementById('update-minimap-size').addEventListener('click', () => {
 
 // ==================== チェックボックス＋ヘルプボタン（これで絶対動く）===================
 document.addEventListener('DOMContentLoaded', () => {
+  map.invalidateSize();
   // ミニマップチェックボックス
   const checkbox = document.getElementById('show-minimap-checkbox');
   if (checkbox) {
