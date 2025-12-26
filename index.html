@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.11.1</title>
+<title>地震マップv1.11.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -303,7 +303,7 @@ async function loadCoordMap() {
 (async () => {
 try {
     // ① GASのURL（自分のに置き換え）
-    const CONFIG_URL = "https://script.google.com/macros/s/XXXXXXX/exec";
+    const CONFIG_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLjAQd8ZfFEd6NITwwqaXHYCVFgnx21oMrX2RGXVikNYEuKgOnGAHgVaAM-PtpuGGB6VywWuqr-iOMrmcgaVgd1JR49crQgqmOLz69gAJoEp-c9PUKMzXB9CuXxuCMF5gvwcDDBSkBCmK_tq-S0zj7nN-Y6TGs8VbMGL7P-BKcy-akWYLh0LRYTXtPGgOcWatD8jaXyBomiBYckL80pQAUQgiVGkmL0loYlxaGMF2M8CkgUodH1pdz9DCKEFO4DpdmGMevJXjK_YiglnmSToxTGXXsQte5AQtZ7RcAOx&lib=MWLOhgOSgL-tyuyTMX9ZnHDjDR3pfYmDk";
     
     // ② 設定JSONを取得
     const configRes = await fetch(CONFIG_URL);
@@ -424,7 +424,7 @@ try {
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.11.1</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.11.2</span>
       `;
       
           // ===== 最大震度 =====
