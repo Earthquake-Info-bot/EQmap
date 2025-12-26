@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.10.5</title>
+<title>地震マップv1.11.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -301,8 +301,20 @@ async function loadCoordMap() {
   
 // ==================== 地震情報取得（そのまま）===================
 (async () => {
-  try {
-    const res = await fetch('https://api.p2pquake.net/v2/history?codes=551&limit=5');
+try {
+    // ① GASのURL（自分のに置き換え）
+    const CONFIG_URL = "https://script.google.com/macros/s/XXXXXXX/exec";
+    
+    // ② 設定JSONを取得
+    const configRes = await fetch(CONFIG_URL);
+    if (!configRes.ok) throw new Error("設定JSONが取得できません");
+    const config = await configRes.json();
+    
+    // ③ JSON内のURLを使って地震情報取得
+    const res = await fetch(config.link);
+    if (!res.ok) throw new Error("地震データが取得できません");
+    const data = await res.json();
+    
     const data = await res.json();
 
     for(const eqData of data){
@@ -412,7 +424,7 @@ async function loadCoordMap() {
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.10.5</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.11.1</span>
       `;
       
           // ===== 最大震度 =====
