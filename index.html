@@ -314,8 +314,6 @@ try {
     const res = await fetch(config.link);
     if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
-    
-    const data = await res.json();
 
     for(const eqData of data){
       const type = eqData.issue?.type;
