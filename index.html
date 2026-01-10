@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.12.1</title>
+<title>地震マップv1.12.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -525,13 +525,18 @@ resolve();
           }
       
           const tsunami = buildTsunamiText(eq.domesticTsunami, eq.foreignTsunami);
+          if (eqData.issue?.type === "ScalePrompt") {
+            nameText = "震源調査中";
+            magnitudeText = "調査中";
+            depthText = "調査中";
+          }
       
           hypoInfoEl.innerHTML = `
       ${timeText}<br>
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.12.1</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.12.2</span>
       `;
       
           // ===== 最大震度 =====
