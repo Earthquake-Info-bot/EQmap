@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.12.2</title>
+<title>地震マップv1.12.3</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -492,14 +492,14 @@ resolve();
               zIndexOffset:10000
             }).addTo(map);
       
-            function blink(){
+            /*function blink(){
               const el = crossMarker.getElement();
               if(!el) return;
               el.style.display='block';
               setTimeout(()=>el.style.display='none',5000);
             }
             setInterval(blink, 6000);
-            blink();
+            blink();*/
           }
       
           // ===== 情報表示 =====
