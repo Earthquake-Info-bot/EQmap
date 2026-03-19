@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.13.1</title>
+<title>地震マップv1.13.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -232,8 +232,8 @@ map.createPane('hypocenterPane');
 map.getPane('hypocenterPane').style.zIndex = 10000;
 
 // 震度ごとの色設定（そのまま）
-const colors = {"1":"#dcdcdc","2":"#00aaff","3":"#0041ff","4":"#fae696",
-                "5-":"#ffe600","5+":"#ffc800","6-":"#ff2800","6+":"#a50021","7":"#b40068"};
+const colors = {"1":"#f2f2ff","2":"#00aaff","3":"#0041ff","4":"#fae696",
+                "5-":"#ffe600","5+":"#ff9900","6-":"#ff2800","6+":"#a50021","7":"#b40068"};
 const textColors = {"1":"#000","2":"#fff","3":"#fff","4":"#000",
                     "5-":"#000","5+":"#000","6-":"#fff","6+":"#fff","7":"#fff"};
 const intensityOrder = {"1":1,"2":2,"3":3,"4":4,"5-":5,"5+":6,"6-":7,"6+":8,"7":9};
@@ -536,7 +536,7 @@ resolve();
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.12.2</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.13.2</span>
       `;
       
           // ===== 最大震度 =====
