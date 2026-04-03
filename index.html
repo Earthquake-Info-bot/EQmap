@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv1.14.2</title>
+<title>T地震マップv1.14.3</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -371,11 +371,23 @@ const p2pToShindo = {10:"1",20:"2",30:"3",40:"4",45:"5-",50:"5+",55:"6-",60:"6+"
 // ★ ScalePrompt用の地方マップをロード
 const areaMap = await loadAreaMap(); // { "鳥取県西部": { areaCode: "xxxx" }, ... }
 
+const shindoOrder = {
+  "1": 1,
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5-": 5,
+  "5+": 6,
+  "6-": 7,
+  "6+": 8,
+  "7": 9
+};
+        
 // 震度を大きい順にソート
 points.sort((a, b) => {
-  const shindoA = p2pToShindo[a.scale];
-  const shindoB = p2pToShindo[b.scale];
-  return shindoA - shindoB;  // 昇順（小さい→大きい）
+  const shA = shindoOrder[p2pToShindo[a.scale]];
+  const shB = shindoOrder[p2pToShindo[b.scale]];
+  return shA - shB; // 小→大（大きい震度が最後に描画される）
 });
         
 for (const p of points) {
