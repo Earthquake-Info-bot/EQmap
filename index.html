@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.13.2</title>
+<title>T地震マップv1.13.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -318,7 +318,8 @@ async function loadAreaMap() {
 // ==================== 地震情報取得（そのまま）===================
 (async () => {
 try {
-    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
+    //const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
+    const res = await fetch("https://api.p2pquake.net/v2/jma/quake?limit=1&since_date=20251208&until_date=20251208&quake_type=ScalePrompt&min_scale=60");
     if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
 
@@ -394,7 +395,7 @@ for (const p of points) {
 
   try {
     console.log("GeoJSON fetch開始:", areaCode);
-    const res = await fetch(`https://geoshape.ex.nii.ac.jp/jma/resource/AreaForecastLocalE/20240520/${areaCode}.geojson`);
+    const res = await fetch(`./geojson/${areaCode}.json`);
     if (!res.ok) throw new Error(`${p.addr} のGeoJSON取得失敗`);
     const geojson = await res.json();
     console.log("GeoJSON取得成功:", areaCode, "features数:", geojson.features?.length);
