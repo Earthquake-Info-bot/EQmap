@@ -1,0 +1,1 @@
+These GeoJson are used ScalePrompt to map NURITSUBUSHI.
