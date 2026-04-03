@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv1.14.1</title>
+<title>T地震マップv1.14.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -375,7 +375,7 @@ const areaMap = await loadAreaMap(); // { "鳥取県西部": { areaCode: "xxxx" 
 points.sort((a, b) => {
   const shindoA = p2pToShindo[a.scale];
   const shindoB = p2pToShindo[b.scale];
-  return shindoB - shindoA;  // 降順（大きい→小さい）
+  return shindoA - shindoB;  // 昇順（小さい→大きい）
 });
         
 for (const p of points) {
