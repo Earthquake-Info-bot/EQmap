@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.1.1</title>
+<title>地震マップv2.1.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -699,24 +699,29 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 // ===============================
-// hypo-info を押した瞬間スクショ
+// hypo-info を押した瞬間スクショ（重複なし）
 // ===============================
 
 const hypoInfo = document.getElementById("hypo-info");
 
-async function captureScreen() {
+// どちらか一方だけにする
+const isTouchDevice = "ontouchstart" in window;
+const eventName = isTouchDevice ? "touchstart" : "click";
+
+async function captureScreen(e) {
   try {
-    // 今表示中の画面全体を canvas 化
+    // 二重発火防止（iOS の sometimes-both-issue 対策）
+    e.preventDefault();
+    e.stopPropagation();
+
     const canvas = await html2canvas(document.body, {
       useCORS: true,
       allowTaint: true,
-      scale: 2   // 高解像度でいい感じ
+      scale: 2
     });
 
-    // PNG へ変換
     const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
 
-    // クリップボードへ
     await navigator.clipboard.write([
       new ClipboardItem({ "image/png": blob })
     ]);
@@ -724,14 +729,12 @@ async function captureScreen() {
     alert("📸 画面をクリップボードへコピーしました！");
   } catch (err) {
     console.error(err);
-    alert("スクリーンショットのコピーに失敗しました。");
+    alert("スクリーンショットのコピーに失敗しました。\n"+e);
   }
 }
 
-// スマホでも反応させる
-["click", "touchstart"].forEach(ev => {
-  hypoInfo.addEventListener(ev, captureScreen);
-});
+// イベントを 1 つだけ登録
+hypoInfo.addEventListener(eventName, captureScreen, { passive: false });
 </script>    
     
 </body>
