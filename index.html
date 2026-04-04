@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.1.8</title>
+<title>地震マップv2.1.9</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -713,18 +713,20 @@ hypoInfo.addEventListener("click", function(e){
 
   // フォントの読み込み完了を待ってから canvas 化
   document.fonts.ready.then(() => {
-    html2canvas(document.body, { useCORS: true, allowTaint: true, scale: 2 })
-      .then(canvas => {
-        canvas.toBlob(blob => {
-          const url = URL.createObjectURL(blob);
-          newTab.location.href = url;  // 非同期後に画像を表示
-        }, "image/png");
-      })
-      .catch(err => {
-        console.error(err);
-        alert("スクリーンショット処理に失敗しました。");
-        if (newTab) newTab.close(); // タブ閉じる
-      });
+    setTimeout(() => { // 500ms 待つ
+      html2canvas(document.body, { useCORS: true, allowTaint: true, scale: 2 })
+        .then(canvas => {
+          canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            newTab.location.href = url;
+          }, "image/png");
+        })
+        .catch(err => {
+          console.error(err);
+          alert("スクリーンショット処理に失敗しました。");
+          if (newTab) newTab.close();
+        });
+    }, 500);
   });
 });
 </script>    
