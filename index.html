@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.1.2</title>
+<title>地震マップv2.1.3</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -726,7 +726,7 @@ async function captureScreen(e) {
       new ClipboardItem({ "image/png": blob })
     ]);
 
-    alert("📸 画面をクリップボードへコピーしました！");
+    alert("スクリーンショットをクリップボードへコピーしました。");
   } catch (err) {
     console.error(err);
     alert("スクリーンショットのコピーに失敗しました。\n"+e);
@@ -734,7 +734,7 @@ async function captureScreen(e) {
 }
 
 // イベントを 1 つだけ登録
-hypoInfo.addEventListener(eventName, captureScreen, { passive: false });
+hypoInfo.addEventListener("click", captureScreen);
 </script>    
     
 </body>
