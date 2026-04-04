@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.1.7</title>
+<title>地震マップv2.1.8</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -699,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 // ===============================
-// hypo-info を押した瞬間スクショ → 新しいタブで画像表示
+// hypo-info を押した瞬間スクショ → 新しいタブで画像表示（フォント対応版）
 // ===============================
 
 const hypoInfo = document.getElementById("hypo-info");
@@ -711,19 +711,21 @@ hypoInfo.addEventListener("click", function(e){
   // まずクリック直後に空タブを開く（iOSでも安全）
   const newTab = window.open("", "_blank");
 
-  // canvas化は非同期でOK
-  html2canvas(document.body, { useCORS: true, allowTaint: true, scale: 2 })
-    .then(canvas => {
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        newTab.location.href = url;  // 非同期後に画像を表示
-      }, "image/png");
-    })
-    .catch(err => {
-      console.error(err);
-      alert("スクリーンショット処理に失敗しました。");
-      if (newTab) newTab.close(); // タブ閉じる
-    });
+  // フォントの読み込み完了を待ってから canvas 化
+  document.fonts.ready.then(() => {
+    html2canvas(document.body, { useCORS: true, allowTaint: true, scale: 2 })
+      .then(canvas => {
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          newTab.location.href = url;  // 非同期後に画像を表示
+        }, "image/png");
+      })
+      .catch(err => {
+        console.error(err);
+        alert("スクリーンショット処理に失敗しました。");
+        if (newTab) newTab.close(); // タブ閉じる
+      });
+  });
 });
 </script>    
     
