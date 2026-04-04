@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.14.3</title>
+<title>地震マップv2.1.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -694,5 +694,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+
+<!-- 画面キャプチャ用ライブラリ -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+// ===============================
+// hypo-info を押した瞬間スクショ
+// ===============================
+
+const hypoInfo = document.getElementById("hypo-info");
+
+async function captureScreen() {
+  try {
+    // 今表示中の画面全体を canvas 化
+    const canvas = await html2canvas(document.body, {
+      useCORS: true,
+      allowTaint: true,
+      scale: 2   // 高解像度でいい感じ
+    });
+
+    // PNG へ変換
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+
+    // クリップボードへ
+    await navigator.clipboard.write([
+      new ClipboardItem({ "image/png": blob })
+    ]);
+
+    alert("📸 画面をクリップボードへコピーしました！");
+  } catch (err) {
+    console.error(err);
+    alert("スクリーンショットのコピーに失敗しました。");
+  }
+}
+
+// スマホでも反応させる
+["click", "touchstart"].forEach(ev => {
+  hypoInfo.addEventListener(ev, captureScreen);
+});
+</script>    
+    
 </body>
 </html>
