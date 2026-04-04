@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.1.5</title>
+<title>地震マップv2.1.6</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -744,7 +744,7 @@ async function captureScreen(e) {
 }
 
 // イベント登録（重複なし）
-hypoInfo.addEventListener("pointerdown", captureScreen, { passive: false });
+hypoInfo.addEventListener("click", captureScreen);
 </script>    
     
 </body>
