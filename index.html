@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv2.2.13</title>
+<title>T地震マップv2.2.14</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -328,6 +328,7 @@ async function loadAreaMap() {
 let markers = [];
 let geoLayers = [];
 let lastEqId = null;
+let geoLabelMarkers = [];
 
 function clearMap() {
   markers.forEach(m => map.removeLayer(m));
@@ -340,6 +341,9 @@ function clearMap() {
     map.removeLayer(hypocenterMarker);
     hypocenterMarker = null;
   }
+
+  geoLabelMarkers.forEach(m => map.removeLayer(m));
+  geoLabelMarkers = [];
 }
   
 // ==================== 地震情報取得（そのまま）===================
@@ -467,7 +471,7 @@ for (const p of points) {
       },
       onEachFeature: (feature, layer) => {
         const center = layer.getBounds().getCenter();
-        L.marker(center, {
+        const labelMarker = L.marker(center, {
           icon: L.divIcon({
             className: 'shindo-label',
             html: `<div style="color:${textColor};font-weight:bold;text-align:center;font-size:1.5em;">${intensity}</div>`,
@@ -476,6 +480,7 @@ for (const p of points) {
           }),
           interactive: false
         }).addTo(map);
+        geoLabelMarkers.push(labelMarker);
       }
     }).addTo(map);
     
