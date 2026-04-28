@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv2.2.11</title>
+<title>T地震マップv2.2.13</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -375,6 +375,7 @@ try {
     let latlngs = [];
 
       if (eqData.issue?.type === "ScalePrompt") {
+        let geoBounds = L.latLngBounds();
         // ----- ScalePrompt 用の GeoJSON 描画 -----
 // ----- ScalePrompt 用の GeoJSON 描画 -----
 // ----- ScalePrompt 用の GeoJSON 描画（途中ログ付き） -----
@@ -479,7 +480,10 @@ for (const p of points) {
     }).addTo(map);
     
     geoLayers.push(layer);
-    geoBounds.extend(layer.getBounds())
+    const bounds = layer.getBounds();
+    if (bounds.isValid()) {
+      geoBounds.extend(bounds);
+    }
 
     console.log(`GeoJSON描画完了: ${p.addr} (${areaCode}) 震度=${intensity}`);
   } catch (err) {
@@ -524,9 +528,9 @@ if (geoBounds.isValid()) {
             latlngs.push([hypo.latitude, hypo.longitude]);
           }
       
-          if (latlngs.length > 0) {
+          if (latlngs.length > 0 && eqData.issue?.type !== "ScalePrompt") {
             map.fitBounds(L.latLngBounds(latlngs), {
-              padding:[150,150],
+              padding:[50,50],
               maxZoom:8
             });
           }
