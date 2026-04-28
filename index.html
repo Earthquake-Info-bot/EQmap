@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv2.2.1</title>
+<title>T地震マップv2.2.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -211,7 +211,6 @@ async function initData(){
   areaMap = await loadAreaMap();
 }
 
-await initData();
   
 // ==================== 地震マップβ版 最終完全版 ====================
 
@@ -705,8 +704,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-fetchEarthquake();
-setInterval(fetchEarthquake, 5000);
+(async () => {
+  await initData();
+  fetchEarthquake();
+  setInterval(fetchEarthquake, 5000);
+})();
 window.addEventListener('resize', updateMaxIntensityPosition);
 </script>
 
