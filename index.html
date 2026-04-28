@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.1.9</title>
+<title>T地震マップv2.2.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -204,6 +204,15 @@ GitHub Pages
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+let coordMap, areaMap;
+
+async function initData(){
+  coordMap = await loadCoordMap();
+  areaMap = await loadAreaMap();
+}
+
+await initData();
+  
 // ==================== 地震マップβ版 最終完全版 ====================
 
 // メイン地図の初期化
@@ -258,6 +267,7 @@ function addIntensityMarker(lat, lon, intensity, popupText){
     interactive: true,
     zIndexOffset: (intensityOrder[intensity]||0)*1000
   }).addTo(map);
+  markers.push(marker)
   if(popupText) marker.bindPopup(popupText);
 }
 
@@ -314,13 +324,26 @@ async function loadAreaMap() {
 
   return areaMap;
 }
+
+let markers = [];
+let geoLayers = [];
+
+function clearMap() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+
+  geoLayers.forEach(g => map.removeLayer(g));
+  geoLayers = [];
+}
   
 // ==================== 地震情報取得（そのまま）===================
-(async () => {
+async function fetchEarthquake() {
 try {
-    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
-    //const res = await fetch("https://api.p2pquake.net/v2/jma/quake?limit=1&since_date=20251208&until_date=20251208&quake_type=ScalePrompt&min_scale=60");
-    if (!res.ok) throw new Error("地震データが取得できません");
+    clearMap();
+    //const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
+    const res = await fetch("https://api-v2-sandbox.p2pquake.net/v2/history?codes=551&limit=5");
+
+  if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
 
     for(const eqData of data){
@@ -328,10 +351,7 @@ try {
 
       const points = eqData.points;
 
-await new Promise(async (resolve, reject) => {
-  try {
     // ★ 座標をローカルJSONから取得
-    const coordMap = await loadCoordMap();
     let latlngs = [];
 
       if (eqData.issue?.type === "ScalePrompt") {
@@ -367,9 +387,6 @@ const textColors = {
 
 // P2P scale → 日本式震度
 const p2pToShindo = {10:"1",20:"2",30:"3",40:"4",45:"5-",50:"5+",55:"6-",60:"6+",70:"7"};
-
-// ★ ScalePrompt用の地方マップをロード
-const areaMap = await loadAreaMap(); // { "鳥取県西部": { areaCode: "xxxx" }, ... }
 
 const shindoOrder = {
   "1": 1,
@@ -419,16 +436,15 @@ for (const p of points) {
     const geojson = await res.json();
     console.log("GeoJSON取得成功:", areaCode, "features数:", geojson.features?.length);
 
-    L.geoJSON(geojson, {
+    const layer = L.geoJSON(geojson, {
       pane: 'geojsonPane',
       style: {
-        color: fillColor,       // 枠線
+        color: fillColor,
         weight: 2,
-        fillColor: fillColor,   // 塗り
+        fillColor: fillColor,
         fillOpacity: 0.5
       },
       onEachFeature: (feature, layer) => {
-        // ポリゴン中心に震度テキストを置く
         const center = layer.getBounds().getCenter();
         L.marker(center, {
           icon: L.divIcon({
@@ -441,6 +457,8 @@ for (const p of points) {
         }).addTo(map);
       }
     }).addTo(map);
+    
+    geoLayers.push(layer);
 
     console.log(`GeoJSON描画完了: ${p.addr} (${areaCode}) 震度=${intensity}`);
   } catch (err) {
@@ -449,7 +467,6 @@ for (const p of points) {
 }
 
 console.log("ScalePrompt の全GeoJSON描画完了");
-resolve();
       }else {
       // ----- 通常の震度マーカー描画 -----
       points.forEach(p => {
@@ -583,12 +600,7 @@ resolve();
           }
       
           updateMaxIntensityPosition();
-          window.addEventListener('resize', updateMaxIntensityPosition);
       
-          resolve();
-        } catch(e) {
-          reject(e);
-        }
       });
 
       break; // 最新の1件だけ表示
@@ -604,7 +616,7 @@ resolve();
 (${error.message})`;
     console.error(error);
   }
-})();
+}
 
 // ==================== ミニマップ（完璧版）===================
 function initMiniMap() {
@@ -693,6 +705,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+fetchEarthquake();
+setInterval(fetchEarthquake, 5000);
+window.addEventListener('resize', updateMaxIntensityPosition);
 </script>
 
 <!-- 画面キャプチャ用ライブラリ -->
