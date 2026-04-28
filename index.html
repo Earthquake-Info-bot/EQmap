@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv2.2.10</title>
+<title>T地震マップv2.2.11</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -345,7 +345,6 @@ function clearMap() {
 // ==================== 地震情報取得（そのまま）===================
 async function fetchEarthquake() {
 try {
-    clearMap();
     //const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
     const res = await fetch("https://api-v2-sandbox.p2pquake.net/v2/history?codes=551&limit=5");
 
@@ -364,6 +363,8 @@ try {
     
     // 更新
     lastEqId = latest.id;
+
+    clearMap();
 
     for(const eqData of data){
       const type = eqData.issue?.type;
