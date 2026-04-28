@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv2.2.4</title>
+<title>T地震マップv2.2.10</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -205,6 +205,7 @@ GitHub Pages
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 let coordMap, areaMap;
+let hypocenterMarker = null;
 
 async function initData(){
   coordMap = await loadCoordMap();
@@ -326,6 +327,7 @@ async function loadAreaMap() {
 
 let markers = [];
 let geoLayers = [];
+let lastEqId = null;
 
 function clearMap() {
   markers.forEach(m => map.removeLayer(m));
@@ -333,6 +335,11 @@ function clearMap() {
 
   geoLayers.forEach(g => map.removeLayer(g));
   geoLayers = [];
+
+  if (hypocenterMarker) {
+    map.removeLayer(hypocenterMarker);
+    hypocenterMarker = null;
+  }
 }
   
 // ==================== 地震情報取得（そのまま）===================
@@ -344,6 +351,19 @@ try {
 
   if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
+
+    // 最新1件だけ使うならこれでOK
+    const latest = data[0];
+    
+    if (!latest) return;
+    
+    // 同じならスキップ
+    if (latest.id === lastEqId) {
+      return;
+    }
+    
+    // 更新
+    lastEqId = latest.id;
 
     for(const eqData of data){
       const type = eqData.issue?.type;
@@ -458,6 +478,7 @@ for (const p of points) {
     }).addTo(map);
     
     geoLayers.push(layer);
+    geoBounds.extend(layer.getBounds())
 
     console.log(`GeoJSON描画完了: ${p.addr} (${areaCode}) 震度=${intensity}`);
   } catch (err) {
@@ -466,6 +487,12 @@ for (const p of points) {
 }
 
 console.log("ScalePrompt の全GeoJSON描画完了");
+if (geoBounds.isValid()) {
+  map.fitBounds(geoBounds, {
+    padding: [50, 50],
+    maxZoom: 8
+  });
+}
       }else {
       // ----- 通常の震度マーカー描画 -----
       points.forEach(p => {
@@ -521,13 +548,22 @@ console.log("ScalePrompt の全GeoJSON描画完了");
               iconAnchor:[size/2,size/2],
               pane:'hypocenterPane'
             });
-      
+                  
+            // 既存を消す
+            if (hypocenterMarker) {
+              map.removeLayer(hypocenterMarker);
+              hypocenterMarker = null;
+            }
+            
             const crossMarker = L.marker([lat,lon], {
               icon:crossIcon,
               interactive:false,
               zIndexOffset:10000
             }).addTo(map);
-      
+            
+            // 保存
+            hypocenterMarker = crossMarker;
+            
             /*function blink(){
               const el = crossMarker.getElement();
               if(!el) return;
