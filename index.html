@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>T地震マップv2.2.17</title>
+<title>地震マップv2.2.17</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -109,7 +109,7 @@ html, body {
   <div class="scale">--</div>
 </div>
 <div id="minimap" style="width:150px;height:200px;position:absolute;bottom:20px;right:20px;z-index:99999;border:3px solid black;background:white;display:none;"></div>
-
+<!--
 <div style="
   position: fixed;
   bottom: 10px;
@@ -124,6 +124,7 @@ html, body {
 ">
   訓練
 </div>
+  -->
   
 <!-- ヘルプボタン -->
 <div id="help-button">？</div>
@@ -364,8 +365,8 @@ function clearMap() {
 // ==================== 地震情報取得（そのまま）===================
 async function fetchEarthquake() {
 try {
-    //const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
-    const res = await fetch("https://api-v2-sandbox.p2pquake.net/v2/history?codes=551&limit=5");
+    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
+    //const res = await fetch("https://api-v2-sandbox.p2pquake.net/v2/history?codes=551&limit=5");
 
   if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
