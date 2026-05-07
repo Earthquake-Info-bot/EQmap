@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.2.17</title>
+<title>地震マップv2.3.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -232,7 +232,12 @@ async function initData(){
 // ==================== 地震マップβ版 最終完全版 ====================
 
 // メイン地図の初期化
-const map = L.map('map').setView([37.5, 138], 5);
+const map = L.map('map', {
+  zoomSnap: 0,
+  zoomDelta: 0.25,
+  preferCanvas: true
+}).setView([37.5, 138], 5);
+  
 function resizeMap() {
   map.invalidateSize();
 }
