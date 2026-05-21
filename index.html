@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.3.2</title>
+<title>地震マップv2.3.3</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -477,7 +477,8 @@ for (const p of points) {
 
   try {
     console.log("GeoJSON fetch開始:", areaCode);
-    const res = await fetch(`./geojson/${areaCode}.json`);
+    const res = await fetch(`https://geoshape.ex.nii.ac.jp/jma/resource/AreaForecastLocalE/20240520/${areaCode}.geojson`);
+    //const res = await fetch(`./geojson/${areaCode}.json`);
     if (!res.ok) throw new Error(`${p.addr} のGeoJSON取得失敗`);
     const geojson = await res.json();
     console.log("GeoJSON取得成功:", areaCode, "features数:", geojson.features?.length);
