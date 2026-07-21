@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv2.3.4</title>
+<title>地震マップv2.3.5</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -247,10 +247,9 @@ window.addEventListener('orientationchange', () => {
   setTimeout(resizeMap, 300);
 });
   
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; CARTO',
-  subdomains: 'abcd',
-  maxZoom: 19
+L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
+  attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>',
+  maxZoom: 18
 }).addTo(map);
 
 // 親要素のサイズに合わせて再描画
@@ -640,7 +639,7 @@ if (geoBounds.isValid()) {
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv2.3.2</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv2.3.5</span>
       `;
       
           // ===== 最大震度 =====
