@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv3.2.1</title>
+<title>地震マップv3.2.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +20,9 @@ html, body {
   width:1920px;
   height:1080px;
   position:relative;
+
+  transform-origin: top left;
+  transform: scale(calc(100vw / 1920));
 }
   
 #map {
