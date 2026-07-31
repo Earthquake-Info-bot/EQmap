@@ -2,47 +2,24 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv3.3.3</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>地震マップv3.1.1</title>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family:"BIZ UDPGothic",sans-serif;
+  font-family: "BIZ UDPGothic", sans-serif;
 }
-
-#capture-outer {
+  
+#map {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
-  background: #000;
-}
-
-#capture-area {
-  width: 1920px;
-  height: 1080px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transform-origin: center center;
-  background: #000;
-}
-  
-#map {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
 }
 
 .intensity-marker {
@@ -52,7 +29,7 @@ html, body {
   border-radius: 50%;
   width: 32px;
   height: 32px;
-  font-family:"BIZ UDPGothic",sans-serif;
+  font-family: "BIZ UDPGothic", sans-serif;
   font-weight: 700;
   font-size: 14px;
   line-height: 1;
@@ -70,7 +47,7 @@ html, body {
   padding: 5px 10px;
   border: 1px solid black;
   z-index: 100000;
-  font-family:"BIZ UDPGothic",sans-serif;
+  font-family: "BIZ UDPGothic", sans-serif;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -82,10 +59,10 @@ html, body {
   background: rgba(255,255,255,0.9);
   padding: 8px 12px;
   border: 1px solid black;
-  font-family:"BIZ UDPGothic",sans-serif;
+  font-family: "BIZ UDPGothic", sans-serif;
+  z-index: 100000;
   font-weight: 700;
   line-height: 1.1;
-  z-index: 100000;
   cursor: move;
 }
 
@@ -93,7 +70,7 @@ html, body {
   min-width: 80px;
   border: 1px solid black;
   text-align: center;
-  font-family:"BIZ UDPGothic",sans-serif;
+  font-family: "BIZ UDPGothic", sans-serif;
   position: absolute;
   left: 10px;
   z-index: 100000;
@@ -117,7 +94,7 @@ html, body {
 
 #max-intensity .scale {
   font-size: 2.2em;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   margin: 0;
   padding: 0;
@@ -128,7 +105,7 @@ html, body {
 
 #help-checkbox-container {
   margin-top: 10px;
-  font-family:"BIZ UDPGothic",sans-serif;
+  font-family: "BIZ UDPGothic", sans-serif;
   font-size: 0.9em;
   font-weight: 400;
   line-height: 1.2;
@@ -141,18 +118,14 @@ html, body {
 </style>
 </head>
 <body>
-<div id="capture-outer">
-  <div id="capture-area">
-    <div id="map"></div>
-    <div id="loading">読み込み中…</div>
-    <div id="hypo-info"></div>
-    <div id="max-intensity">
-      <div class="label">最大震度</div>
-      <div class="scale">--</div>
-    </div>
-    <div id="minimap" style="width:150px;height:200px;position:absolute;bottom:20px;right:20px;z-index:99999;border:3px solid black;background:white;display:none;"></div>
-  </div>
+<div id="map"></div>
+<div id="loading">読み込み中…</div>
+<div id="hypo-info"></div>
+<div id="max-intensity">
+  <div class="label">最大震度</div>
+  <div class="scale">--</div>
 </div>
+<div id="minimap" style="width:150px;height:200px;position:absolute;bottom:20px;right:20px;z-index:99999;border:3px solid black;background:white;display:none;"></div>
 <!--
 <div style="
   position: fixed;
@@ -161,7 +134,7 @@ html, body {
   background-color: red;
   color: white;
   padding: 6px 10px;
-  font-family:"BIZ UDPGothic",sans-serif;
+  font-family: 'Yu Gothic','YuGothic','メイリオ',sans-serif;
   font-weight: bold;
   line-height: 1.1;
   z-index: 100000;
@@ -247,7 +220,7 @@ GitHub Pages
     overflow-y: auto;       /* 縦スクロール有効 */
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    font-family:"BIZ UDPGothic",sans-serif;
+    font-family: "Yu Gothic","メイリオ",sans-serif;
   }
 
   /* 閉じるボタン */
@@ -281,9 +254,6 @@ const map = L.map('map', {
   zoomDelta: 0.25,
   preferCanvas: true
 }).setView([37.5, 138], 5);
-setTimeout(() => {
-  map.invalidateSize();
-}, 100);
   
 function resizeMap() {
   map.invalidateSize();
@@ -832,98 +802,34 @@ window.addEventListener('resize', updateMaxIntensityPosition);
 // ===============================
 // hypo-info を押した瞬間スクショ → 新しいタブで画像表示（フォント対応版）
 // ===============================
-function resizeCapture() {
-  const outer = document.getElementById("capture-outer");
-  const area = document.getElementById("capture-area");
-
-  const scale = Math.min(
-    outer.clientWidth / 1920,
-    outer.clientHeight / 1080
-  );
-
-  area.style.transform =
-    `translate(-50%, -50%) scale(${scale})`;
-}
-
-window.addEventListener("resize", resizeCapture);
-resizeCapture();
-  
-const CAPTURE_W = 1920;
-const CAPTURE_H = 1080;
 
 const hypoInfo = document.getElementById("hypo-info");
-const loading = document.getElementById("loading");
 
-hypoInfo.addEventListener("click", async function(e){
+hypoInfo.addEventListener("click", function(e){
   e.preventDefault();
   e.stopPropagation();
 
-  try {
-    await document.fonts.ready;
+  // まずクリック直後に空タブを開く（iOSでも安全）
+  const newTab = window.open("", "_blank");
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const target = document.getElementById("capture-area");
-    
-    const canvas = await html2canvas(target, {
-      useCORS: true,
-      allowTaint: false,
-    
-      width: CAPTURE_W,
-      height: CAPTURE_H,
-    
-      windowWidth: CAPTURE_W,
-      windowHeight: CAPTURE_H,
-
-      scrollX: 0,
-      scrollY: 0,
-
-      scale: 1,
-      backgroundColor: "#000000",
-
-      ignoreElements: (el) =>
-        el.id === "loading"
-    });
-
-    const blob = await new Promise(resolve => {
-      canvas.toBlob(resolve, "image/png");
-    });
-
-    if (!blob) {
-      throw new Error("PNG生成失敗");
-    }
-
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "image/png": blob
+  // フォントの読み込み完了を待ってから canvas 化
+  document.fonts.ready.then(() => {
+    setTimeout(() => { // 500ms 待つ
+      html2canvas(document.body, { useCORS: true, allowTaint: true, scale: 2 })
+        .then(canvas => {
+          canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            newTab.location.href = url;
+          }, "image/png");
         })
-      ]);
-
-      loading.textContent = "画像をコピーしました";
-      loading.style.display = "block";
-
-      setTimeout(() => {
-        loading.style.display = "none";
-      }, 2000);
-
-    } catch (clipErr) {
-      console.error("コピー失敗:", clipErr);
-
-      const newTab = window.open("", "_blank");
-
-      if (newTab) {
-        newTab.location.href = URL.createObjectURL(blob);
-      } else {
-        throw new Error("画像表示用タブを開けませんでした");
-      }
-    }
-
-  } catch(err) {
-    console.error(err);
-    alert("スクリーンショット処理に失敗しました。");
-  }
+        .catch(err => {
+          console.error(err);
+          alert("スクリーンショット処理に失敗しました。");
+          if (newTab) newTab.close();
+        });
+    }, 500);
+  });
 });
-</script>
+</script>    
 </body>
 </html>
