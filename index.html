@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv3.1.1</title>
+<title>地震マップv3.1.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -820,9 +820,7 @@ hypoInfo.addEventListener("click", async function(e){
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    const target = document.getElementById("capture-area");
-
-    const canvas = await html2canvas(target, {
+    const canvas = await html2canvas(document.body, {
       useCORS: true,
       allowTaint: false,
 
@@ -838,62 +836,48 @@ hypoInfo.addEventListener("click", async function(e){
       scale: 1,
       backgroundColor: "#000000",
 
-      onclone: (clonedDoc) => {
-        const clonedArea = clonedDoc.getElementById("capture-area");
-        if (clonedArea) {
-          clonedArea.style.transform = "none";
-          clonedArea.style.left = "0";
-          clonedArea.style.top = "0";
-        }
-      },
-
       ignoreElements: (el) =>
-        el.id === "hypo-info"
+        el.id === "loading"
     });
 
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        throw new Error("PNG生成失敗");
+    const blob = await new Promise(resolve => {
+      canvas.toBlob(resolve, "image/png");
+    });
+
+    if (!blob) {
+      throw new Error("PNG生成失敗");
+    }
+
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": blob
+        })
+      ]);
+
+      loading.textContent = "画像をコピーしました";
+      loading.style.display = "block";
+
+      setTimeout(() => {
+        loading.style.display = "none";
+      }, 2000);
+
+    } catch (clipErr) {
+      console.error("コピー失敗:", clipErr);
+
+      const newTab = window.open("", "_blank");
+
+      if (newTab) {
+        newTab.location.href = URL.createObjectURL(blob);
+      } else {
+        throw new Error("画像表示用タブを開けませんでした");
       }
-
-      try {
-        // 画像コピー
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            "image/png": blob
-          })
-        ]);
-
-        // 成功表示
-        loading.textContent = "画像をコピーしました";
-        loading.style.display = "block";
-
-        setTimeout(() => {
-          loading.style.display = "none";
-        }, 2000);
-
-      } catch (clipErr) {
-        console.error("Clipboard error:", clipErr);
-
-        // コピー不可の場合のみ新しいタブ
-        const newTab = window.open("", "_blank");
-
-        if (newTab) {
-          const url = URL.createObjectURL(blob);
-          newTab.location.href = url;
-        } else {
-          throw new Error("新しいタブを開けませんでした");
-        }
-      }
-
-    }, "image/png");
+    }
 
   } catch(err) {
     console.error(err);
     alert("スクリーンショット処理に失敗しました。");
   }
-});
-</script>    
-    
+});     
 </body>
 </html>
