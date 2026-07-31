@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv3.1.1</title>
+<title>地震マップv3.2.1</title>
 <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
@@ -657,7 +657,7 @@ if (geoBounds.isValid()) {
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv2.3.6</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv3.2.1</span>
       `;
       
           // ===== 最大震度 =====
@@ -804,31 +804,76 @@ window.addEventListener('resize', updateMaxIntensityPosition);
 // ===============================
 
 const hypoInfo = document.getElementById("hypo-info");
+const loading = document.getElementById("loading");
 
-hypoInfo.addEventListener("click", function(e){
+hypoInfo.addEventListener("click", async function(e){
   e.preventDefault();
   e.stopPropagation();
 
-  // まずクリック直後に空タブを開く（iOSでも安全）
-  const newTab = window.open("", "_blank");
+  try {
+    await document.fonts.ready;
 
-  // フォントの読み込み完了を待ってから canvas 化
-  document.fonts.ready.then(() => {
-    setTimeout(() => { // 500ms 待つ
-      html2canvas(document.body, { useCORS: true, allowTaint: true, scale: 2 })
-        .then(canvas => {
-          canvas.toBlob(blob => {
-            const url = URL.createObjectURL(blob);
-            newTab.location.href = url;
-          }, "image/png");
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const canvas = await html2canvas(document.body, {
+      useCORS: true,
+      allowTaint: true,
+      scale: 2
+    });
+
+    const blob = await new Promise(resolve => {
+      canvas.toBlob(resolve, "image/png");
+    });
+
+    if (!blob) {
+      throw new Error("PNG生成失敗");
+    }
+
+    // ① 画像コピー
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": blob
         })
-        .catch(err => {
-          console.error(err);
-          alert("スクリーンショット処理に失敗しました。");
-          if (newTab) newTab.close();
-        });
-    }, 500);
-  });
+      ]);
+
+      loading.textContent = "画像をコピーしました";
+      loading.style.display = "block";
+
+      setTimeout(() => {
+        loading.style.display = "none";
+      }, 2000);
+
+      return;
+
+    } catch(copyErr) {
+      console.error("コピー失敗:", copyErr);
+    }
+
+
+    // ② 新しいタブ表示
+    try {
+      const newTab = window.open("", "_blank");
+
+      if (!newTab) {
+        throw new Error("タブを開けませんでした");
+      }
+
+      newTab.location.href = URL.createObjectURL(blob);
+      return;
+
+    } catch(tabErr) {
+      console.error("タブ表示失敗:", tabErr);
+    }
+
+
+    // ③ 最終的に失敗
+    alert("スクリーンショット処理に失敗しました。");
+
+  } catch(err) {
+    console.error(err);
+    alert("スクリーンショット処理に失敗しました。");
+  }
 });
 </script>    
 </body>
