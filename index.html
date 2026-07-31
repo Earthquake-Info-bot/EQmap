@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv3.2.2</title>
+<title>地震マップv3.3.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,13 +16,25 @@ html, body {
   font-family: "Noto Sans JP", sans-serif;
 }
 
-#capture-area {
-  width:1920px;
-  height:1080px;
-  position:relative;
+#capture-outer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
 
-  transform-origin: top left;
-  transform: scale(calc(100vw / 1920));
+#capture-area {
+  width: 1920px;
+  height: 1080px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  background: #000;
 }
   
 #map {
@@ -129,15 +141,17 @@ html, body {
 </style>
 </head>
 <body>
-<div id="capture-area">
-  <div id="map"></div>
-  <div id="loading">読み込み中…</div>
-  <div id="hypo-info"></div>
-  <div id="max-intensity">
-    <div class="label">最大震度</div>
-    <div class="scale">--</div>
+<div id="capture-outer">
+  <div id="capture-area">
+    <div id="map"></div>
+    <div id="loading">読み込み中…</div>
+    <div id="hypo-info"></div>
+    <div id="max-intensity">
+      <div class="label">最大震度</div>
+      <div class="scale">--</div>
+    </div>
+    <div id="minimap" style="width:150px;height:200px;position:absolute;bottom:20px;right:20px;z-index:99999;border:3px solid black;background:white;display:none;"></div>
   </div>
-  <div id="minimap" style="width:150px;height:200px;position:absolute;bottom:20px;right:20px;z-index:99999;border:3px solid black;background:white;display:none;"></div>
 </div>
 <!--
 <div style="
@@ -818,7 +832,22 @@ window.addEventListener('resize', updateMaxIntensityPosition);
 // ===============================
 // hypo-info を押した瞬間スクショ → 新しいタブで画像表示（フォント対応版）
 // ===============================
+function resizeCapture() {
+  const outer = document.getElementById("capture-outer");
+  const area = document.getElementById("capture-area");
 
+  const scale = Math.min(
+    outer.clientWidth / 1920,
+    outer.clientHeight / 1080
+  );
+
+  area.style.transform =
+    `translate(-50%, -50%) scale(${scale})`;
+}
+
+window.addEventListener("resize", resizeCapture);
+resizeCapture();
+  
 const CAPTURE_W = 1920;
 const CAPTURE_H = 1080;
 
